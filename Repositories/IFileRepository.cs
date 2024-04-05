@@ -4,7 +4,7 @@ namespace fileFolder.Repositories;
 
 public interface IFileRepository
 {
-    Task CreateFoleder(AppFile folder);
+    Task<AppFile> CreateFoleder(AppFile folder);
     Task<AppFile> GetFile(Guid id);
     Task<IEnumerable<AppFile>> GetFiles(Guid? parentId);
     Task<AppFile> CreateFile(AppFile file);

@@ -28,9 +28,19 @@ public class FileRepository : IFileRepository
         return result.Entity;
     }
 
-    public Task CreateFoleder(AppFile folder)
+    public async Task<AppFile> CreateFoleder(AppFile folder)
     {
-        throw new NotImplementedException();
+        var parent = await _context.Files.FindAsync(folder.ParentId);
+        if (parent == null)
+        {
+            throw new Exception("Parent not found");
+        }
+        folder.Left = parent.Left + 1;
+        folder.Right = parent.Left + 2;
+        var result = await _context.Files.AddAsync(folder);
+        await _context.SaveChangesAsync();
+
+        return result.Entity;
     }
 
     public Task DeleteFile(Guid id)
