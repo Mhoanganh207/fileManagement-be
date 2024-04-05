@@ -25,9 +25,8 @@ public class FileController : ControllerBase
 
 
     [HttpPost]
-    public async Task<IActionResult> createFile(string parentId, IFormFile file)
+    public async Task<IActionResult> CreateFile(string parentId, IFormFile file)
     {
-
         AppFile newFile = new(file)
         {
             ParentId = Guid.Parse(parentId)
@@ -36,5 +35,6 @@ public class FileController : ControllerBase
         return Ok(result);
 
     }
+
 
 }

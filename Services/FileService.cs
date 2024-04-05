@@ -1,5 +1,8 @@
+using System.Text.Json;
+using fileFolder.DTOs;
 using fileFolder.Models;
 using fileFolder.Repositories;
+
 
 namespace fileFolder.Services;
 
@@ -14,15 +17,45 @@ public class FileService : IFileService
         _fileRepository = fileRepository;
     }
 
-    public Task<AppFile> CreateFile(AppFile file)
+    public async Task<AppFile> CreateFile(AppFile file)
     {
-        return _fileRepository.CreateFile(file);
+        var parent = _fileRepository.GetFile(file.ParentId).Result;
+        file.Left = parent.Left + 1;
+        file.Right = parent.Left + 2;
+        return await _fileRepository.CreateFile(file);
     }
 
-    public Task<AppFile> CreateFolder(AppFile folder)
+    public async Task CreateFolder(Dictionary<string, object> folder, Guid parentId)
     {
-        throw new NotImplementedException();
+        foreach (var key in folder.Keys)
+        {
+           
+            if (folder[key] is IFormFile)
+            {
+                AppFile file = new((IFormFile)folder[key])
+                {
+                    ParentId = parentId
+                };
+                await CreateFile(file);
+            }
+            else
+            {
+                AppFile newFolder = new()
+                {
+                    Name = key,
+                    ParentId = parentId,
+                    Mime = "folder"
+                };
+                var res = await CreateFile(newFolder);
+
+                await CreateFolder((Dictionary<string, object>)folder[key], newFolder.Id);
+            }
+        }
+
+        return;
     }
+
+   
 
     public Task DeleteFile(Guid id)
     {

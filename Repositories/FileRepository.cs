@@ -1,46 +1,28 @@
 using fileFolder.Data;
+using fileFolder.DTOs;
 using fileFolder.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace fileFolder.Repositories;
 
-public class FileRepository : IFileRepository
+public class FileRepository(AppDbContext context) : IFileRepository
 {
 
-    public readonly AppDbContext _context;
+    public readonly AppDbContext _context = context;
 
-    public FileRepository(AppDbContext context)
-    {
-        _context = context;
-    }
     public async Task<AppFile> CreateFile(AppFile file)
     {
-        var parent = await _context.Files.FirstOrDefaultAsync(f => f.Id.ToString() == file.ParentId.ToString());
-        if (parent == null)
-        {
-            throw new Exception("Parent not found");
-        }
-        file.Left = parent.Left + 1;
-        file.Right = parent.Left + 2;
         var result = await _context.Files.AddAsync(file);
         await _context.SaveChangesAsync();
 
         return result.Entity;
     }
 
-    public async Task<AppFile> CreateFoleder(AppFile folder)
+    public async Task CreateFoleder(Folder folder)
     {
-        var parent = await _context.Files.FindAsync(folder.ParentId);
-        if (parent == null)
-        {
-            throw new Exception("Parent not found");
-        }
-        folder.Left = parent.Left + 1;
-        folder.Right = parent.Left + 2;
-        var result = await _context.Files.AddAsync(folder);
-        await _context.SaveChangesAsync();
+        
 
-        return result.Entity;
+        
     }
 
     public Task DeleteFile(Guid id)
@@ -48,9 +30,16 @@ public class FileRepository : IFileRepository
         throw new NotImplementedException();
     }
 
-    public Task<AppFile> GetFile(Guid id)
+    public async Task<AppFile> GetFile(Guid id)
     {
-        throw new NotImplementedException();
+        var file = await _context.Files.FindAsync(id);
+
+        if(file == null)
+        {
+            throw new Exception("File not found");
+        }
+
+        return file;
     }
 
     public Task<IEnumerable<AppFile>> GetFiles(Guid? parentId)
