@@ -1,8 +1,10 @@
-using fileFolder.Models;
-using fileFolder.Services;
+using System.Security.Claims;
+using fileManagement.Models;
+using fileManagement.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace fileFolder.Controllers;
+namespace fileManagement.Controllers;
 
 
 [ApiController]
@@ -10,30 +12,49 @@ namespace fileFolder.Controllers;
 public class FileController : ControllerBase
 {
 
-    public readonly IFileService _fileService;
+    private readonly IFileService _fileService;
 
-    public FileController(IFileService fileService)
+    private readonly IAuthService _authService;
+
+
+
+    public FileController(IFileService fileService, IAuthService authService)
     {
         _fileService = fileService;
+        _authService = authService;
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetFiles(Guid? parentId)
-    {
-        throw new NotImplementedException();
-    }
+    // [Authorize]
+    // [HttpGet("{id}")]
+    // public async Task<IActionResult> GetFiles(Guid? parentId)
+    // {
+    //     throw new NotImplementedException();
+    // }
 
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreateFile(string parentId, IFormFile file)
     {
+        var email =  User.FindFirst(ClaimTypes.Name)?.Value;
+        if(email == null){
+            return Unauthorized();
+        }
+        var user = await _authService.GetUserByEmail(email);
+
+
+        if(user == null){
+            return Unauthorized();
+        }
         AppFile newFile = new(file)
         {
-            ParentId = Guid.Parse(parentId)
+            ParentId = Guid.Parse(parentId),
+            Name = file.FileName,
+            Mime = file.ContentType,
+            UserId = user.Id
         };
         var result = await _fileService.CreateFile(newFile);
         return Ok(result);
-
     }
 
 

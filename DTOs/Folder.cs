@@ -1,5 +1,5 @@
-namespace fileFolder.DTOs;
+namespace fileManagement.DTOs;
 public class  Folder
 {
-    public IEnumerable<IFormFile> Files { get; set; }
+    public IEnumerable<IFormFile> Files { get; set; } = [];
 }

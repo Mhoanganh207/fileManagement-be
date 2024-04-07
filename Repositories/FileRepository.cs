@@ -1,9 +1,9 @@
-using fileFolder.Data;
-using fileFolder.DTOs;
-using fileFolder.Models;
-using Microsoft.EntityFrameworkCore;
+using fileManagement.Data;
+using fileManagement.DTOs;
+using fileManagement.Models;
 
-namespace fileFolder.Repositories;
+
+namespace fileManagement.Repositories;
 
 public class FileRepository(AppDbContext context) : IFileRepository
 {
@@ -18,12 +18,6 @@ public class FileRepository(AppDbContext context) : IFileRepository
         return result.Entity;
     }
 
-    public async Task CreateFoleder(Folder folder)
-    {
-        
-
-        
-    }
 
     public Task DeleteFile(Guid id)
     {

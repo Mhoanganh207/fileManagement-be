@@ -1,7 +1,7 @@
-using fileFolder.Models;
+using fileManagement.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace fileFolder.Data;
+namespace fileManagement.Data;
 
 public class AppDbContext : DbContext
 
@@ -12,7 +12,17 @@ public class AppDbContext : DbContext
     {
     }
 
-    
+    public DbSet<User> Users { get; set; }
 
     public  DbSet<AppFile> Files { get; set; }
+
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<User>()
+        .HasMany<AppFile>(u => u.Files)
+        .WithOne(f => f.User)
+        .HasForeignKey(f => f.UserId)
+        .OnDelete(DeleteBehavior.Cascade);
+    }
 }

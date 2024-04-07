@@ -1,10 +1,10 @@
 using System.Text.Json;
-using fileFolder.DTOs;
-using fileFolder.Models;
-using fileFolder.Repositories;
+using fileManagement.Models;
+using fileManagement.Repositories;
 
 
-namespace fileFolder.Services;
+
+namespace fileManagement.Services;
 
 public class FileService : IFileService
 {
@@ -25,18 +25,23 @@ public class FileService : IFileService
         return await _fileRepository.CreateFile(file);
     }
 
-    public async Task CreateFolder(Dictionary<string, object> folder, Guid parentId)
+    public async Task CreateFolder(Dictionary<string, object> folder, Guid parentId,Guid userId)
     {
         foreach (var key in folder.Keys)
         {
            
             if (folder[key] is IFormFile)
             {
-                AppFile file = new((IFormFile)folder[key])
+
+                var file = (IFormFile)folder[key];
+                var newFile = new AppFile(file)
                 {
-                    ParentId = parentId
+                    ParentId = parentId,
+                    Name = file.FileName,
+                    Mime = file.ContentType,
+                    UserId = userId
                 };
-                await CreateFile(file);
+                await CreateFile(newFile);
             }
             else
             {
@@ -44,11 +49,12 @@ public class FileService : IFileService
                 {
                     Name = key,
                     ParentId = parentId,
-                    Mime = "folder"
+                    Mime = "folder",
+                    UserId  = userId
                 };
                 var res = await CreateFile(newFolder);
 
-                await CreateFolder((Dictionary<string, object>)folder[key], newFolder.Id);
+                await CreateFolder((Dictionary<string, object>)folder[key], newFolder.Id,userId);
             }
         }
 

@@ -1,12 +1,14 @@
 
-using fileFolder.DTOs;
-using fileFolder.Services;
+using System.Security.Claims;
+using fileManagement.DTOs;
+using fileManagement.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
 
 
-namespace fileFolder.Controllers;
+namespace fileManagement.Controllers;
 
 
 [ApiController]
@@ -17,17 +19,32 @@ public class FolderController : ControllerBase
 
     private readonly IFileService _fileService;
 
-    public FolderController(IFileService fileService)
+    private readonly IAuthService _authService;
+
+    public FolderController(IFileService fileService, IAuthService authService)
     {
         _fileService = fileService;
+        _authService = authService;
     }
 
 
 
-
+    
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreateFolder(string parentId, Folder folder)
     {
+        var email = User.FindFirst(ClaimTypes.Name)?.Value;
+        if (email == null)
+        {
+            return Unauthorized();
+        }
+        var user = await _authService.GetUserByEmail(email);
+
+        if (user == null)
+        {
+            return Unauthorized();
+        }
 
         if (folder == null || folder.Files.Count() == 0)
         {
@@ -63,7 +80,7 @@ public class FolderController : ControllerBase
                 }
             }
         }
-        await _fileService.CreateFolder(treeFile, Guid.Parse(parentId));
+        await _fileService.CreateFolder(treeFile, Guid.Parse(parentId),user.Id);
 
 
         return Ok("Files uploaded successfully.");
